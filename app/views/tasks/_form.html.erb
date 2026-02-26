@@ -1,0 +1,57 @@
+<%= form_with model: [project, task], class: "space-y-5" do |f| %>
+  <% if task.errors.any? %>
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+      <ul class="text-sm text-red-700 space-y-1">
+        <% task.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :title, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :title, class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500", autofocus: true, required: true %>
+  </div>
+
+  <div>
+    <%= f.label :description, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_area :description, rows: 5, class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500", placeholder: "Describe the task... (Markdown supported)" %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <%= f.label :task_status_id, "Status", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :task_status_id, project.task_statuses.ordered.map { |s| [s.name, s.id] },
+          {}, class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+    </div>
+
+    <div>
+      <%= f.label :priority, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :priority, Task.priorities.keys.map { |p| [p.titleize, p] },
+          {}, class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <%= f.label :assignee_id, "Assignee", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :assignee_id, User.all.map { |u| [u.name, u.id] },
+          { include_blank: "Unassigned" },
+          class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+    </div>
+
+    <div>
+      <%= f.label :due_date, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.date_field :due_date, class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" %>
+    </div>
+  </div>
+
+  <div>
+    <%= f.label :attachments, "Attachments", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.file_field :attachments, multiple: true, class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" %>
+  </div>
+
+  <%= f.submit task.persisted? ? "Update Task" : "Create Task",
+      class: "w-full py-2.5 px-4 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer" %>
+<% end %>

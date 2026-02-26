@@ -1,0 +1,20 @@
+<%= turbo_frame_tag "modal" do %>
+  <div class="fixed inset-0 z-50 overflow-hidden" data-controller="slideover">
+    <div class="absolute inset-0 bg-gray-500/50" data-action="click->slideover#close"></div>
+
+    <div class="absolute inset-y-0 right-0 w-full max-w-lg bg-white shadow-xl flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">New Task</h2>
+        <%= link_to project_board_path(@project), class: "text-gray-400 hover:text-gray-600", data: { turbo_frame: "modal" } do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        <% end %>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-6">
+        <%= render "form", task: @task, project: @project %>
+      </div>
+    </div>
+  </div>
+<% end %>

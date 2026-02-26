@@ -1,0 +1,22 @@
+<div class="flex flex-col w-80 bg-gray-100 rounded-lg shrink-0 max-h-full">
+  <!-- Column header -->
+  <div class="flex items-center justify-between p-3 border-b border-gray-200">
+    <div class="flex items-center gap-2">
+      <span class="w-3 h-3 rounded-full" style="background-color: <%= status.color %>"></span>
+      <h3 class="font-semibold text-sm text-gray-700"><%= status.name %></h3>
+      <span class="text-xs text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded-full">
+        <%= tasks.size %>
+      </span>
+    </div>
+  </div>
+
+  <!-- Droppable task list -->
+  <div class="flex-1 overflow-y-auto p-2 space-y-2 min-h-[100px]"
+       id="<%= dom_id(status, :tasks) %>"
+       data-kanban-target="column"
+       data-status-id="<%= status.id %>">
+    <% tasks.each do |task| %>
+      <%= render "boards/card", task: task %>
+    <% end %>
+  </div>
+</div>

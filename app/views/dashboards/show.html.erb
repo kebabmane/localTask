@@ -1,0 +1,46 @@
+<div class="p-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <%= link_to new_project_path, class: "inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        New Project
+      <% end %>
+    </div>
+
+    <% if @projects.empty? %>
+      <div class="text-center py-16 bg-white rounded-lg border border-gray-200">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-gray-900">No projects yet</h3>
+        <p class="mt-2 text-sm text-gray-500">Create your first project to get started with your Kanban board.</p>
+        <div class="mt-6">
+          <%= link_to "Create Project", new_project_path, class: "inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700" %>
+        </div>
+      </div>
+    <% else %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% @projects.each do |project| %>
+          <%= link_to project_board_path(project), class: "block bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md transition-shadow" do %>
+            <div class="flex items-center gap-3 mb-3">
+              <span class="w-4 h-4 rounded-sm" style="background-color: <%= project.color %>"></span>
+              <h2 class="text-lg font-semibold text-gray-900"><%= project.name %></h2>
+              <span class="text-xs text-gray-400 font-mono"><%= project.prefix %></span>
+            </div>
+            <% if project.description.present? %>
+              <p class="text-sm text-gray-500 mb-4 line-clamp-2"><%= project.description %></p>
+            <% end %>
+            <div class="flex items-center gap-4 text-xs text-gray-400">
+              <span><%= project.tasks.open.count %> open</span>
+              <span><%= project.tasks.closed.count %> closed</span>
+              <span><%= project.task_statuses.count %> statuses</span>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html class="h-full bg-gray-50">
+  <head>
+    <title><%= content_for(:title) || "LocalTask" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="LocalTask">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="h-full">
+    <% if authenticated? %>
+      <div class="flex h-full">
+        <%= render "shared/sidebar" %>
+
+        <div class="flex-1 flex flex-col min-w-0">
+          <%= render "shared/flash" %>
+          <main class="flex-1 overflow-hidden">
+            <%= yield %>
+          </main>
+        </div>
+      </div>
+    <% else %>
+      <%= render "shared/flash" %>
+      <%= yield %>
+    <% end %>
+  </body>
+</html>

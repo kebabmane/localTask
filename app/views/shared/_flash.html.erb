@@ -1,0 +1,15 @@
+<div id="flash" class="fixed top-4 right-4 z-50 space-y-2" data-controller="flash">
+  <% flash.each do |type, message| %>
+    <% next if type == "token" %>
+    <div class="flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-sm
+                <%= type == 'notice' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200' %>"
+         data-flash-target="message">
+      <span><%= message %></span>
+      <button type="button" class="ml-2 text-gray-400 hover:text-gray-600" data-action="click->flash#dismiss">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  <% end %>
+</div>

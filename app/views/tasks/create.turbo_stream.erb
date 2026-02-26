@@ -1,0 +1,5 @@
+<%= turbo_stream.append dom_id(@task.task_status, :tasks) do %>
+  <%= render "boards/card", task: @task %>
+<% end %>
+
+<%= turbo_stream.update "modal", "" %>

@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# STDIO MCP Server for Claude Code integration
+# Usage: ruby bin/mcp_server
+# Configure in .mcp.json for Claude Code
+
+require_relative "../config/environment"
+
+# Eager load app classes so descendants are available
+Rails.application.eager_load!
+
+server = FastMcp::Server.new(name: "local-task", version: "1.0.0")
+
+# Register all tools and resources
+ApplicationTool.descendants.each { |tool| server.register_tool(tool) }
+ApplicationResource.descendants.each { |resource| server.register_resource(resource) }
+
+# Start STDIO transport
+server.start

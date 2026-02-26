@@ -1,0 +1,52 @@
+<%= tag.div id: dom_id(task),
+    class: "bg-white rounded-lg shadow-sm p-3 cursor-grab active:cursor-grabbing border border-gray-200 hover:border-gray-300 transition-colors",
+    draggable: "true",
+    data: { kanban_target: "card", task_id: task.id, position: task.position } do %>
+
+  <!-- Task ID and priority -->
+  <div class="flex items-center justify-between mb-1">
+    <span class="text-xs text-gray-400 font-mono"><%= task.display_id %></span>
+    <% if task.critical? || task.high? %>
+      <span class="text-xs px-1.5 py-0.5 rounded <%= task.critical? ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700' %>">
+        <%= task.priority.titleize %>
+      </span>
+    <% end %>
+  </div>
+
+  <!-- Title -->
+  <%= link_to task.title,
+      project_task_path(task.project, task),
+      class: "text-sm font-medium text-gray-800 hover:text-indigo-600 block mb-2",
+      data: { turbo_frame: "modal" } %>
+
+  <!-- Footer -->
+  <div class="flex items-center justify-between text-xs text-gray-400">
+    <div class="flex items-center gap-2">
+      <% if task.assignee %>
+        <span class="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs"
+              style="background-color: <%= task.assignee.avatar_color %>"
+              title="<%= task.assignee.name %>">
+          <%= task.assignee.name[0].upcase %>
+        </span>
+      <% end %>
+      <% if task.agent_identifier.present? %>
+        <span class="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-xs" title="Agent: <%= task.agent_identifier %>">
+          <%= task.agent_identifier %>
+        </span>
+      <% end %>
+      <% if task.blocked? %>
+        <span class="px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-xs">Blocked</span>
+      <% end %>
+    </div>
+    <div class="flex items-center gap-2">
+      <% if task.due_date %>
+        <span class="<%= task.due_date < Date.today ? 'text-red-500' : '' %>">
+          <%= task.due_date.strftime("%b %d") %>
+        </span>
+      <% end %>
+      <% if task.comments.size > 0 %>
+        <span><%= task.comments.size %> <svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></span>
+      <% end %>
+    </div>
+  </div>
+<% end %>

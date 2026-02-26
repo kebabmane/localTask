@@ -1,0 +1,22 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash -c "bundle exec rails db:prepare && bin/dev"
+    ports:
+      - "3000:3000"
+    environment:
+      - RAILS_ENV=development
+    volumes:
+      - .:/rails
+      - bundle_data:/usr/local/bundle
+      - db_data:/rails/db
+      - storage_data:/rails/storage
+    stdin_open: true
+    tty: true
+
+volumes:
+  bundle_data:
+  db_data:
+  storage_data:
