@@ -43,7 +43,7 @@ class TasksController < ApplicationController
   end
 
   def destroy
-    @task.destroy
+    @task.soft_delete(user: Current.user)
     respond_to do |format|
       format.html { redirect_to project_board_path(@project), notice: "Task deleted." }
       format.turbo_stream

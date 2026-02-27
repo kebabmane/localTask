@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_27_060516) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_27_074824) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -168,6 +168,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_27_060516) do
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.integer "creator_id", null: false
+    t.datetime "deleted_at"
+    t.string "deleted_by_agent"
+    t.integer "deleted_by_id"
     t.text "description"
     t.date "due_date"
     t.integer "position", default: 0, null: false
@@ -180,6 +183,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_27_060516) do
     t.index ["agent_identifier"], name: "index_tasks_on_agent_identifier"
     t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
     t.index ["creator_id"], name: "index_tasks_on_creator_id"
+    t.index ["deleted_at"], name: "index_tasks_on_deleted_at"
     t.index ["due_date"], name: "index_tasks_on_due_date"
     t.index ["priority"], name: "index_tasks_on_priority"
     t.index ["project_id", "task_number"], name: "index_tasks_on_project_id_and_task_number", unique: true

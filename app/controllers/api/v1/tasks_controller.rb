@@ -35,7 +35,10 @@ module Api
       end
 
       def destroy
-        @task.destroy
+        @task.soft_delete(
+          user: @current_user,
+          agent: request.headers["X-Agent-Identifier"]
+        )
         head :no_content
       end
 
