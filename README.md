@@ -8,6 +8,7 @@ Everything runs locally with zero external dependencies -- no Redis, no Postgres
 
 - **Kanban Board** -- Drag-and-drop task management with customizable per-project status columns
 - **AI Agent Integration** -- MCP server (STDIO + HTTP/SSE) with 12 tools for Claude Code and other agents
+- **Agent Registration** -- Create agents in the UI and download MCP config files for Claude Code and Claude Desktop
 - **Agent Hooks** -- Notifications (polling + webhooks) when tasks are assigned, statuses change, or agents are @mentioned
 - **REST API** -- Bearer token auth, rate limiting, agent identification via headers
 - **Admin Panel** -- System dashboard, user management, agent discovery, webhook monitoring, system health
@@ -198,6 +199,52 @@ Available at `/admin` for users with the `admin` role. The panel has six tabs:
 
 Agents are **discovered automatically** by scanning `agent_identifier` across tasks, comments, webhooks, and notifications -- no explicit registration needed.
 
+## Agent Registration & MCP Config
+
+Available at `/agents` for all logged-in users. Register AI agents and download pre-built MCP configuration files.
+
+### Creating an Agent
+
+1. Navigate to `/agents` and click "Create Agent"
+2. Enter a name (e.g., "Claude Code Agent") -- an identifier is auto-generated (e.g., `claude-code-agent`)
+3. On creation, an API token is auto-generated and shown once
+4. The agent detail page provides downloadable config files and usage instructions
+
+### Config Downloads
+
+Each agent provides three config formats:
+
+| Format | File | Use Case |
+|--------|------|----------|
+| **Claude Code** | `.mcp.json` | Place in project root -- Claude Code auto-discovers it |
+| **Claude Desktop** | `claude_desktop_config.json` | Merge into Claude Desktop's config file |
+| **STDIO** | `.mcp.json` | Local development (requires Ruby + project clone) |
+
+**Claude Code / Claude Desktop** (HTTP/SSE transport):
+```json
+{
+  "mcpServers": {
+    "local-task": {
+      "url": "http://localhost:3000/mcp/sse"
+    }
+  }
+}
+```
+
+**STDIO transport** (for local development):
+```json
+{
+  "mcpServers": {
+    "local-task": {
+      "command": "ruby",
+      "args": ["/path/to/localTask/bin/mcp_server"]
+    }
+  }
+}
+```
+
+The agent detail page also shows REST API usage examples with the correct `agent_identifier` and `X-Agent-Identifier` header.
+
 ## REST API
 
 All API endpoints are under `/api/v1/` and require a Bearer token.
@@ -262,7 +309,8 @@ User (1) ----< Project (1) ----< TaskStatus (ordered, per-project)
                              +----< TaskDependency (self-join)
                              +----< ActiveStorage::Attachment
 
-User (1) ----< ApiToken
+User (1) ----< ApiToken ----? Agent (optional link)
+User (1) ----< Agent
 AgentWebhook (standalone, keyed by agent_identifier)
 ```
 
@@ -302,6 +350,7 @@ app/
   controllers/
     admin/             # Admin panel (7 controllers)
     api/v1/            # REST API controllers
+    agents_controller.rb   # Agent registration + config downloads
     boards_controller.rb
     tasks_controller.rb
     ...
@@ -309,6 +358,7 @@ app/
     task.rb            # Core model with broadcasts, soft delete, audit trail
     project.rb         # Auto-creates default statuses
     api_token.rb       # Bearer token auth with bcrypt
+    agent.rb           # Registered agents with linked API tokens
     agent_notification.rb  # Polling notifications for agents
     agent_webhook.rb   # Push webhook registrations
     mention.rb         # @agent and @TASK-ID mentions
@@ -323,6 +373,7 @@ app/
     webhook_delivery_job.rb  # Async webhook delivery with retries
   views/
     admin/             # Admin panel views (11 templates)
+    agents/            # Agent registration + config download
     boards/            # Kanban board views
     tasks/             # Task forms and detail panel
     ...
