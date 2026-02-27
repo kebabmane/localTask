@@ -7,8 +7,12 @@ Everything runs locally with zero external dependencies -- no Redis, no Postgres
 ## Features
 
 - **Kanban Board** -- Drag-and-drop task management with customizable per-project status columns
-- **AI Agent Integration** -- MCP server (STDIO + HTTP/SSE) with 8 tools for Claude Code and other agents
+- **AI Agent Integration** -- MCP server (STDIO + HTTP/SSE) with 12 tools for Claude Code and other agents
+- **Agent Hooks** -- Notifications (polling + webhooks) when tasks are assigned, statuses change, or agents are @mentioned
 - **REST API** -- Bearer token auth, rate limiting, agent identification via headers
+- **Admin Panel** -- System dashboard, user management, agent discovery, webhook monitoring, system health
+- **Audit Trail** -- Field-level change tracking on tasks (title, priority, description, due date, assignee, agent)
+- **Soft Delete** -- Tasks are archived instead of destroyed, recoverable by admins
 - **Real-time Updates** -- Turbo Streams via Solid Cable for live board sync across browser tabs
 - **Multi-user** -- Registration, login, password reset, admin roles
 - **Per-project Statuses** -- Default columns (Planning, Backlog, In Progress, With Agent, Tested, Done) -- fully customizable
@@ -79,7 +83,7 @@ The app will be available at http://localhost:3000.
 
 ## MCP Integration (Claude Code)
 
-LocalTask exposes an MCP server with **8 tools** and **1 resource template** so AI agents can manage tasks directly.
+LocalTask exposes an MCP server with **12 tools** and **1 resource template** so AI agents can manage tasks and receive notifications.
 
 ### Setup for Claude Code
 
@@ -108,6 +112,10 @@ The project includes a `.mcp.json` at the root. When you open the project in Cla
 | `UpdateTaskStatusTool` | Move a task between statuses (e.g. "In Progress" to "Done") |
 | `AddCommentTool` | Add a comment to a task (supports agent_identifier) |
 | `SearchTasksTool` | Full-text search across task titles and descriptions |
+| `GetAgentNotificationsTool` | Poll for unread notifications (task assignments, status changes, @mentions) |
+| `RegisterWebhookTool` | Register a webhook URL to receive push notifications |
+| `ListWebhooksTool` | List all registered webhooks for an agent |
+| `DeleteWebhookTool` | Remove a webhook registration |
 
 ### MCP Resource Template
 
@@ -121,6 +129,74 @@ The project includes a `.mcp.json` at the root. When you open the project in Cla
 - **HTTP/SSE** -- Mounted at `/mcp` on the Rails app (for other agents)
   - SSE: `GET http://localhost:3000/mcp/sse`
   - Messages: `POST http://localhost:3000/mcp/messages`
+
+## Agent Hooks
+
+Agents can be notified about events via **polling** (MCP tools) or **webhooks** (push).
+
+### Notification Events
+
+| Event | Trigger |
+|-------|---------|
+| `task_assigned` | A task's `agent_identifier` is set to this agent |
+| `status_changed` | Any task involving this agent changes status |
+| `mentioned` | This agent is @mentioned in a comment (e.g. `@claude-code`) |
+
+### @Mentions
+
+Comments support two mention types:
+
+- **Agent mentions:** `@claude-code` -- notifies the named agent
+- **Task references:** `@LT-3` -- cross-references another task and notifies agents on that task
+
+### Polling (MCP)
+
+```
+GetAgentNotificationsTool(agent_identifier: "claude-code", mark_as_read: true)
+```
+
+Returns unread notifications with event type, message, task reference, and payload.
+
+### Webhooks
+
+Register a webhook URL and LocalTask will POST JSON payloads for each event:
+
+```
+RegisterWebhookTool(agent_identifier: "claude-code", url: "https://example.com/hooks")
+```
+
+Webhook payloads include HMAC-SHA256 signatures (via `X-Webhook-Signature` header) when a secret is provided. Webhooks auto-deactivate after 10 consecutive failures.
+
+## Audit Trail
+
+All changes to task fields are automatically tracked as system comments in the activity timeline:
+
+| Field | Example Message |
+|-------|----------------|
+| Title | `Title changed from "Old" to "New"` |
+| Priority | `Priority changed from high to critical` |
+| Due Date | `Due date set to 2026-03-15` / `Due date removed` |
+| Assignee | `Assigned to Jane Smith` / `Unassigned` |
+| Agent | `Agent changed from claude-code to devin` |
+| Description | `Description updated` |
+| Status | `Status changed from In Progress to Done` |
+
+Tasks use **soft delete** -- deleting a task sets `deleted_at` instead of destroying the record. Soft-deleted tasks are hidden from normal queries but can be recovered.
+
+## Admin Panel
+
+Available at `/admin` for users with the `admin` role. The panel has six tabs:
+
+| Tab | Description |
+|-----|-------------|
+| **Overview** | Dashboard with stat cards, recent tasks, active agents, recent users |
+| **Users** | User management with search, role editing (admin/user), detail views |
+| **Agents** | Discovered agents with task counts, webhooks, notifications, activity history |
+| **API Tokens** | All tokens across users with filter (All/Active/Revoked) and revoke |
+| **Webhooks** | Webhook management with toggle active/inactive, reset failures, delete |
+| **System** | Ruby/Rails version, SQLite stats, table row counts, Solid Queue status, memory |
+
+Agents are **discovered automatically** by scanning `agent_identifier` across tasks, comments, webhooks, and notifications -- no explicit registration needed.
 
 ## REST API
 
@@ -150,12 +226,19 @@ curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:3000/api/v1/projects
 | `GET` | `/api/v1/projects/:id/tasks/:id` | Task detail with comments |
 | `POST` | `/api/v1/projects/:id/tasks` | Create a task |
 | `PATCH` | `/api/v1/projects/:id/tasks/:id` | Update a task |
-| `DELETE` | `/api/v1/projects/:id/tasks/:id` | Delete a task |
+| `DELETE` | `/api/v1/projects/:id/tasks/:id` | Soft-delete a task |
 | `PATCH` | `/api/v1/projects/:id/tasks/:id/status` | Move task to new status |
 | `GET` | `/api/v1/projects/:id/tasks/:id/comments` | List comments |
 | `POST` | `/api/v1/projects/:id/tasks/:id/comments` | Add a comment |
 | `GET` | `/api/v1/projects/:id/statuses` | List project statuses |
 | `GET` | `/api/v1/me` | Current user profile |
+| `GET` | `/api/v1/agent_notifications` | List agent notifications (filter: `agent`, `unread`) |
+| `PATCH` | `/api/v1/agent_notifications/:id/mark_read` | Mark notification as read |
+| `POST` | `/api/v1/agent_notifications/mark_all_read` | Mark all read for an agent |
+| `GET` | `/api/v1/agent_webhooks` | List webhooks (filter: `agent`) |
+| `POST` | `/api/v1/agent_webhooks` | Register a webhook |
+| `PATCH` | `/api/v1/agent_webhooks/:id` | Update a webhook |
+| `DELETE` | `/api/v1/agent_webhooks/:id` | Delete a webhook |
 
 ### Example: Create a task from an agent
 
@@ -174,11 +257,13 @@ User (1) ----< Project (1) ----< TaskStatus (ordered, per-project)
                     |                    |
                     +----< Task >--------+
                              |
-                             +----< Comment
+                             +----< Comment ----< Mention
+                             +----< AgentNotification
                              +----< TaskDependency (self-join)
                              +----< ActiveStorage::Attachment
 
 User (1) ----< ApiToken
+AgentWebhook (standalone, keyed by agent_identifier)
 ```
 
 ### Default Statuses (per project)
@@ -202,26 +287,44 @@ Statuses are fully customizable per project -- add, rename, reorder, or delete.
 
 Each task gets a human-readable display ID based on the project prefix: `LT-1`, `LT-2`, etc.
 
+### Comment Types
+
+| Type | Description |
+|------|-------------|
+| `comment` | Regular user or agent comment |
+| `status_change` | Auto-generated when task status changes |
+| `system` | Auto-generated audit trail for field changes |
+
 ## Project Structure
 
 ```
 app/
   controllers/
-    api/v1/          # REST API controllers
+    admin/             # Admin panel (7 controllers)
+    api/v1/            # REST API controllers
     boards_controller.rb
     tasks_controller.rb
     ...
   models/
-    task.rb          # Core model with broadcasts, dependencies, acts_as_list
-    project.rb       # Auto-creates default statuses
-    api_token.rb     # Bearer token auth with bcrypt
+    task.rb            # Core model with broadcasts, soft delete, audit trail
+    project.rb         # Auto-creates default statuses
+    api_token.rb       # Bearer token auth with bcrypt
+    agent_notification.rb  # Polling notifications for agents
+    agent_webhook.rb   # Push webhook registrations
+    mention.rb         # @agent and @TASK-ID mentions
     ...
-  tools/             # MCP tools (8 total)
-  resources/         # MCP resources
-  serializers/       # Plain Ruby JSON serializers
+  tools/               # MCP tools (12 total)
+  resources/           # MCP resources
+  services/
+    notification_service.rb  # Central notification coordinator
+    mention_parser.rb        # @mention parsing (agents + task refs)
+  serializers/         # Plain Ruby JSON serializers
+  jobs/
+    webhook_delivery_job.rb  # Async webhook delivery with retries
   views/
-    boards/          # Kanban board views
-    tasks/           # Task forms and detail panel
+    admin/             # Admin panel views (11 templates)
+    boards/            # Kanban board views
+    tasks/             # Task forms and detail panel
     ...
   javascript/
     controllers/
@@ -229,10 +332,10 @@ app/
       slideover_controller.js  # Task detail panel
       flash_controller.js      # Auto-dismiss notifications
 bin/
-  mcp_server         # STDIO MCP entry point
+  mcp_server           # STDIO MCP entry point
 config/
   initializers/
-    fast_mcp.rb      # HTTP/SSE MCP mount at /mcp
+    fast_mcp.rb        # HTTP/SSE MCP mount at /mcp
 ```
 
 ## Development
