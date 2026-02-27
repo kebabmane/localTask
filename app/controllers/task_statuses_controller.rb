@@ -1,5 +1,6 @@
 class TaskStatusesController < ApplicationController
   before_action :set_project
+  before_action :require_project_manager
 
   def create
     @status = @project.task_statuses.build(status_params)
@@ -34,7 +35,7 @@ class TaskStatusesController < ApplicationController
   private
 
   def set_project
-    @project = Current.user.projects.find(params[:project_id])
+    @project = Current.user.accessible_projects.find(params[:project_id])
   end
 
   def status_params

@@ -1,8 +1,9 @@
 class ProjectsController < ApplicationController
   before_action :set_project, only: [:show, :edit, :update, :destroy]
+  before_action :require_project_manager, only: [:edit, :update, :destroy]
 
   def index
-    @projects = Current.user.projects.active.order(:position)
+    @projects = Current.user.accessible_projects.active.order(:position)
   end
 
   def show
@@ -42,7 +43,7 @@ class ProjectsController < ApplicationController
   private
 
   def set_project
-    @project = Current.user.projects.find(params[:id])
+    @project = Current.user.accessible_projects.find(params[:id])
   end
 
   def project_params

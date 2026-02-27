@@ -1,0 +1,4 @@
+one:
+  task: two
+  dependency: one
+  dependency_type: 0

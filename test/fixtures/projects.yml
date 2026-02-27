@@ -1,0 +1,13 @@
+one:
+  name: Project One
+  prefix: LT
+  color: "#6366f1"
+  position: 1
+  user: one
+
+two:
+  name: Project Two
+  prefix: TP
+  color: "#ef4444"
+  position: 2
+  user: two

@@ -2,6 +2,8 @@ class Project < ApplicationRecord
   belongs_to :user
   has_many :task_statuses, -> { order(position: :asc) }, dependent: :destroy
   has_many :tasks, dependent: :destroy
+  has_many :project_members, dependent: :destroy
+  has_many :members, through: :project_members, source: :user
 
   acts_as_list
 
@@ -16,6 +18,19 @@ class Project < ApplicationRecord
 
   def next_task_number
     (tasks.maximum(:task_number) || 0) + 1
+  end
+
+  # Authorization helpers — project creator is always an implicit owner
+  def can_view?(user)
+    user_id == user.id || project_members.exists?(user_id: user.id)
+  end
+
+  def can_edit?(user)
+    user_id == user.id || project_members.where(user_id: user.id, role: [:editor, :owner]).exists?
+  end
+
+  def can_manage?(user)
+    user_id == user.id || project_members.where(user_id: user.id, role: :owner).exists?
   end
 
   private

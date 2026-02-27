@@ -1,0 +1,6 @@
+one:
+  name: Claude Code
+  identifier: claude-code
+  description: Claude Code AI agent
+  user: one
+  api_token: one

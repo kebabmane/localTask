@@ -7,6 +7,8 @@ class User < ApplicationRecord
   has_many :comments, dependent: :nullify
   has_many :api_tokens, dependent: :destroy
   has_many :agents, dependent: :destroy
+  has_many :project_memberships, class_name: "ProjectMember", dependent: :destroy
+  has_many :shared_projects, through: :project_memberships, source: :project
 
   enum :role, { user: 0, admin: 1 }
 
@@ -14,4 +16,9 @@ class User < ApplicationRecord
   validates :name, presence: true
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
+
+  def accessible_projects
+    Project.where(id: projects.select(:id))
+           .or(Project.where(id: project_memberships.select(:project_id)))
+  end
 end

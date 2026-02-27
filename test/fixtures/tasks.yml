@@ -1,0 +1,20 @@
+one:
+  title: Fix login bug
+  description: Users report 500 on login
+  priority: 2
+  task_number: 1
+  position: 1
+  project: one
+  task_status: backlog
+  creator: one
+
+two:
+  title: Add dark mode
+  description: Implement dark mode toggle
+  priority: 1
+  task_number: 2
+  position: 2
+  project: one
+  task_status: in_progress
+  creator: one
+  assignee: two

@@ -1,0 +1,9 @@
+<% token_value = "test_token_value_for_fixtures_1234567890abcdefgh" %>
+<% token_digest = BCrypt::Password.create(token_value) %>
+
+one:
+  name: Test Token
+  prefix: test_tok
+  token_digest: <%= token_digest %>
+  active: true
+  user: one

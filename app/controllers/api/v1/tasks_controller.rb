@@ -45,7 +45,7 @@ module Api
       private
 
       def set_project
-        @project = @current_user.projects.find(params[:project_id])
+        @project = @current_user.accessible_projects.find(params[:project_id])
       end
 
       def set_task

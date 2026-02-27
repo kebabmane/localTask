@@ -1,0 +1,5 @@
+one:
+  agent_identifier: claude-code
+  url: https://example.com/webhook
+  active: true
+  failures: 0

@@ -2,12 +2,12 @@ module Api
   module V1
     class ProjectsController < BaseController
       def index
-        projects = @current_user.projects.active.includes(:task_statuses).order(:position)
+        projects = @current_user.accessible_projects.active.includes(:task_statuses).order(:position)
         render json: projects.map { |p| ProjectSerializer.new(p).as_json }
       end
 
       def show
-        project = @current_user.projects.find(params[:id])
+        project = @current_user.accessible_projects.find(params[:id])
         render json: ProjectDetailSerializer.new(project).as_json
       end
 
@@ -18,7 +18,11 @@ module Api
       end
 
       def update
-        project = @current_user.projects.find(params[:id])
+        project = @current_user.accessible_projects.find(params[:id])
+        unless project.can_manage?(@current_user)
+          render json: { error: "You don't have permission to update this project" }, status: :forbidden
+          return
+        end
         project.update!(project_params)
         render json: ProjectSerializer.new(project).as_json
       end

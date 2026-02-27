@@ -18,7 +18,7 @@
       <% end %>
     </div>
 
-    <% Current.user&.projects&.active&.order(:position)&.each do |project| %>
+    <% Current.user&.accessible_projects&.active&.order(:position)&.each do |project| %>
       <%= link_to project_board_path(project),
           class: "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm #{ @project&.id == project.id ? 'bg-gray-800 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }" do %>
         <span class="w-3 h-3 rounded-sm shrink-0" style="background-color: <%= project.color %>"></span>

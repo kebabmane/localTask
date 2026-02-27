@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_27_092831) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_27_105541) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -124,6 +124,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_27_092831) do
     t.index ["mentioned_task_id"], name: "index_mentions_on_mentioned_task_id"
   end
 
+  create_table "project_members", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "project_id", null: false
+    t.integer "role", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["project_id", "user_id"], name: "index_project_members_on_project_id_and_user_id", unique: true
+    t.index ["project_id"], name: "index_project_members_on_project_id"
+    t.index ["user_id"], name: "index_project_members_on_user_id"
+  end
+
   create_table "projects", force: :cascade do |t|
     t.boolean "archived", default: false, null: false
     t.string "color", default: "#6366f1", null: false
@@ -227,6 +238,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_27_092831) do
   add_foreign_key "comments", "users"
   add_foreign_key "mentions", "comments"
   add_foreign_key "mentions", "tasks", column: "mentioned_task_id"
+  add_foreign_key "project_members", "projects"
+  add_foreign_key "project_members", "users"
   add_foreign_key "projects", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "task_dependencies", "tasks"

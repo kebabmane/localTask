@@ -15,6 +15,7 @@ Everything runs locally with zero external dependencies -- no Redis, no Postgres
 - **Audit Trail** -- Field-level change tracking on tasks (title, priority, description, due date, assignee, agent)
 - **Soft Delete** -- Tasks are archived instead of destroyed, recoverable by admins
 - **Real-time Updates** -- Turbo Streams via Solid Cable for live board sync across browser tabs
+- **Project Permissions** -- Share projects with team members as owner/editor/viewer with role-based access control
 - **Multi-user** -- Registration, login, password reset, admin roles
 - **Per-project Statuses** -- Default columns (Planning, Backlog, In Progress, With Agent, Tested, Done) -- fully customizable
 - **Task Dependencies** -- Block/relate tasks to each other
@@ -297,17 +298,34 @@ curl -X POST http://localhost:3000/api/v1/projects/1/tasks \
   -d '{"title": "Fix login bug", "priority": "high", "description": "Users report 500 on login"}'
 ```
 
+## Project Permissions
+
+Projects support role-based sharing via the **Project Members** system. Available at `/projects/:id/members` for project owners.
+
+### Roles
+
+| Role | View Board | Create/Edit Tasks | Manage Statuses/Members | Delete Project |
+|------|-----------|-------------------|------------------------|----------------|
+| **Owner** (creator) | Yes | Yes | Yes | Yes |
+| **Owner** (shared) | Yes | Yes | Yes | Yes |
+| **Editor** | Yes | Yes | No | No |
+| **Viewer** | Yes | No | No | No |
+
+The project creator is always an implicit owner. Additional users can be added by email with any role. All controllers (web + API) enforce these permissions -- viewers get read-only access, editors can create/edit tasks and comments, and only owners can manage statuses, members, and project settings.
+
 ## Data Model
 
 ```
 User (1) ----< Project (1) ----< TaskStatus (ordered, per-project)
                     |                    |
                     +----< Task >--------+
-                             |
-                             +----< Comment ----< Mention
-                             +----< AgentNotification
-                             +----< TaskDependency (self-join)
-                             +----< ActiveStorage::Attachment
+                    |        |
+                    |        +----< Comment ----< Mention
+                    |        +----< AgentNotification
+                    |        +----< TaskDependency (self-join)
+                    |        +----< ActiveStorage::Attachment
+                    |
+                    +----< ProjectMember >---- User (shared access)
 
 User (1) ----< ApiToken ----? Agent (optional link)
 User (1) ----< Agent
@@ -351,12 +369,16 @@ app/
     admin/             # Admin panel (7 controllers)
     api/v1/            # REST API controllers
     agents_controller.rb   # Agent registration + config downloads
+    project_members_controller.rb  # Role-based member management
     boards_controller.rb
     tasks_controller.rb
+    concerns/
+      authorization.rb   # Project role-based access control
     ...
   models/
     task.rb            # Core model with broadcasts, soft delete, audit trail
-    project.rb         # Auto-creates default statuses
+    project.rb         # Auto-creates default statuses, permission methods
+    project_member.rb  # Role-based project sharing (viewer/editor/owner)
     api_token.rb       # Bearer token auth with bcrypt
     agent.rb           # Registered agents with linked API tokens
     agent_notification.rb  # Polling notifications for agents

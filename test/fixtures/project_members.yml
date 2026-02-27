@@ -1,0 +1,5 @@
+# User two is an editor on project one (owned by user one)
+editor_on_one:
+  project: one
+  user: two
+  role: 1

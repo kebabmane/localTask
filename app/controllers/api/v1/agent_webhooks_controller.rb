@@ -5,7 +5,7 @@ module Api
     class AgentWebhooksController < BaseController
       # GET /api/v1/agent_webhooks?agent=claude-code
       def index
-        webhooks = AgentWebhook.all
+        webhooks = scoped_webhooks
         webhooks = webhooks.for_agent(params[:agent]) if params[:agent]
         render json: webhooks.map { |w| AgentWebhookSerializer.new(w).as_json }
       end
@@ -13,25 +13,39 @@ module Api
       # POST /api/v1/agent_webhooks
       def create
         webhook = AgentWebhook.new(webhook_params)
+        verify_agent_ownership!(webhook.agent_identifier)
+        return if performed?
+
         webhook.save!
         render json: AgentWebhookSerializer.new(webhook).as_json, status: :created
       end
 
       # PATCH /api/v1/agent_webhooks/:id
       def update
-        webhook = AgentWebhook.find(params[:id])
+        webhook = scoped_webhooks.find(params[:id])
         webhook.update!(webhook_params)
         render json: AgentWebhookSerializer.new(webhook).as_json
       end
 
       # DELETE /api/v1/agent_webhooks/:id
       def destroy
-        webhook = AgentWebhook.find(params[:id])
+        webhook = scoped_webhooks.find(params[:id])
         webhook.destroy!
         head :no_content
       end
 
       private
+
+      def scoped_webhooks
+        agent_identifiers = @current_user.agents.pluck(:identifier)
+        AgentWebhook.where(agent_identifier: agent_identifiers)
+      end
+
+      def verify_agent_ownership!(identifier)
+        unless @current_user.agents.exists?(identifier: identifier)
+          render json: { error: "Agent not found or not owned by you" }, status: :forbidden
+        end
+      end
 
       def webhook_params
         params.require(:webhook).permit(:agent_identifier, :url, :secret, :active, event_types: [])

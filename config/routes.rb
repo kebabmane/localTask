@@ -11,6 +11,7 @@ Rails.application.routes.draw do
       resources :comments, only: [:create, :destroy]
       resource :position, only: [:update], controller: "task_positions"
     end
+    resources :members, only: [:index, :create, :destroy], controller: "project_members"
     get "board", to: "boards#show"
   end
 

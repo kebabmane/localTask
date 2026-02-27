@@ -1,0 +1,6 @@
+one:
+  agent_identifier: claude-code
+  event_type: task_assigned
+  message: "Task LT-1 has been assigned to you"
+  read: false
+  task: one

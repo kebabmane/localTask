@@ -1,6 +1,7 @@
 class CommentsController < ApplicationController
   before_action :set_project
   before_action :set_task
+  before_action :require_project_editor
 
   def create
     @comment = @task.comments.build(comment_params)
@@ -29,7 +30,7 @@ class CommentsController < ApplicationController
   private
 
   def set_project
-    @project = Current.user.projects.find(params[:project_id])
+    @project = Current.user.accessible_projects.find(params[:project_id])
   end
 
   def set_task

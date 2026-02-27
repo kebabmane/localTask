@@ -1,6 +1,7 @@
 class TasksController < ApplicationController
   before_action :set_project
   before_action :set_task, only: [:show, :edit, :update, :destroy]
+  before_action :require_project_editor, only: [:new, :create, :edit, :update, :destroy]
 
   def show
     respond_to do |format|
@@ -53,7 +54,7 @@ class TasksController < ApplicationController
   private
 
   def set_project
-    @project = Current.user.projects.find(params[:project_id])
+    @project = Current.user.accessible_projects.find(params[:project_id])
   end
 
   def set_task
