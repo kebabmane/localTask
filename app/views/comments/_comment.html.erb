@@ -6,7 +6,7 @@
       </svg>
     </div>
     <div class="text-sm text-gray-500 py-1">
-      <%= simple_format(comment.body, {}, wrapper_tag: "span") %>
+      <%= comment.body.gsub(/\*\*(.+?)\*\*/, '\1') %>
       <span class="text-xs text-gray-400 ml-2"><%= time_ago_in_words(comment.created_at) %> ago</span>
     </div>
   <% else %>

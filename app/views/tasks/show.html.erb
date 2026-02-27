@@ -51,7 +51,7 @@
             <%= form_with url: project_task_path(@project, @task), method: :patch, class: "inline" do |f| %>
               <%= f.select :task_status_id, @project.task_statuses.ordered.map { |s| [s.name, s.id] },
                   { selected: @task.task_status_id },
-                  class: "text-sm rounded-lg border-gray-300", data: { action: "change->this#submit" } %>
+                  class: "text-sm rounded-lg border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-1.5 px-2", data: { action: "change->this#submit" } %>
             <% end %>
           </div>
           <div>

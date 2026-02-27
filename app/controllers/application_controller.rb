@@ -5,4 +5,10 @@ class ApplicationController < ActionController::Base
 
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
+
+  helper_method :show_sidebar?
+
+  def show_sidebar?
+    authenticated? && !is_a?(SessionsController) && !is_a?(RegistrationsController) && !is_a?(PasswordsController)
+  end
 end
