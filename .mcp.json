@@ -2,8 +2,7 @@
   "mcpServers": {
     "local-task": {
       "command": "ruby",
-      "args": ["bin/mcp_server"],
-      "cwd": "/Users/rhysevans/Projects/localTask"
+      "args": ["bin/mcp_server"]
     }
   }
 }

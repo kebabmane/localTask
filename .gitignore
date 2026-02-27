@@ -39,3 +39,13 @@
 
 # Ignore Claude Code user-specific settings
 /.claude/settings.local.json
+
+# OS files
+.DS_Store
+
+# Editor/IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
