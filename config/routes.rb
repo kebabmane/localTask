@@ -14,6 +14,13 @@ Rails.application.routes.draw do
     get "board", to: "boards#show"
   end
 
+  # Agent management
+  resources :agents, only: [:index, :new, :create, :show, :destroy] do
+    member do
+      get :download_config
+    end
+  end
+
   # API Token management
   resources :api_tokens, only: [:index, :create, :destroy]
 

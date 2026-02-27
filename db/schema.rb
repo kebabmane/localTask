@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_27_074824) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_27_092831) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -67,6 +67,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_27_074824) do
     t.datetime "updated_at", null: false
     t.string "url", null: false
     t.index ["agent_identifier", "active"], name: "idx_agent_webhooks_active_agent"
+  end
+
+  create_table "agents", force: :cascade do |t|
+    t.integer "api_token_id"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "identifier", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["api_token_id"], name: "index_agents_on_api_token_id"
+    t.index ["identifier"], name: "index_agents_on_identifier", unique: true
+    t.index ["user_id"], name: "index_agents_on_user_id"
   end
 
   create_table "api_tokens", force: :cascade do |t|
@@ -207,6 +220,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_27_074824) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "agent_notifications", "comments"
   add_foreign_key "agent_notifications", "tasks"
+  add_foreign_key "agents", "api_tokens"
+  add_foreign_key "agents", "users"
   add_foreign_key "api_tokens", "users"
   add_foreign_key "comments", "tasks"
   add_foreign_key "comments", "users"

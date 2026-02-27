@@ -1,0 +1,213 @@
+<div class="p-6">
+  <div class="max-w-3xl mx-auto">
+    <div class="mb-6">
+      <%= link_to agents_path, class: "text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to Agents
+      <% end %>
+    </div>
+
+    <!-- Agent Header -->
+    <div class="flex items-start justify-between mb-6">
+      <div class="flex items-start gap-3">
+        <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+          <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900"><%= @agent.name %></h1>
+          <div class="flex items-center gap-2 mt-1">
+            <code class="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono"><%= @agent.identifier %></code>
+            <span class="text-xs text-gray-400">Created <%= @agent.created_at.strftime("%b %d, %Y") %></span>
+          </div>
+          <% if @agent.description.present? %>
+            <p class="text-sm text-gray-500 mt-2"><%= @agent.description %></p>
+          <% end %>
+        </div>
+      </div>
+      <%= button_to "Delete Agent", agent_path(@agent), method: :delete,
+          class: "text-sm text-red-600 hover:text-red-800",
+          data: { turbo_confirm: "Delete this agent and revoke its API token?" } %>
+    </div>
+
+    <!-- One-time Token Display -->
+    <% if flash[:token] %>
+      <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+        <p class="text-sm font-medium text-green-800 mb-2">Your agent's API token (copy it now — it won't be shown again!):</p>
+        <div class="flex items-center gap-2">
+          <code class="flex-1 bg-white px-3 py-2 rounded border border-green-300 text-sm font-mono text-green-900 select-all break-all"><%= flash[:token] %></code>
+        </div>
+        <p class="text-xs text-green-600 mt-2">Use as: <code>Authorization: Bearer &lt;token&gt;</code> for REST API access.</p>
+      </div>
+    <% end %>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div class="bg-white rounded-lg border border-gray-200 p-3 text-center">
+        <p class="text-2xl font-bold text-gray-900"><%= @stats[:tasks_total] %></p>
+        <p class="text-xs text-gray-500">Tasks</p>
+      </div>
+      <div class="bg-white rounded-lg border border-gray-200 p-3 text-center">
+        <p class="text-2xl font-bold text-blue-600"><%= @stats[:tasks_open] %></p>
+        <p class="text-xs text-gray-500">Open</p>
+      </div>
+      <div class="bg-white rounded-lg border border-gray-200 p-3 text-center">
+        <p class="text-2xl font-bold text-amber-600"><%= @stats[:webhooks_active] %></p>
+        <p class="text-xs text-gray-500">Webhooks</p>
+      </div>
+      <div class="bg-white rounded-lg border border-gray-200 p-3 text-center">
+        <p class="text-2xl font-bold text-green-600"><%= @stats[:notifications_unread] %></p>
+        <p class="text-xs text-gray-500">Unread</p>
+      </div>
+    </div>
+
+    <!-- MCP Configuration -->
+    <div class="space-y-4">
+      <h2 class="text-lg font-semibold text-gray-900">MCP Configuration</h2>
+      <p class="text-sm text-gray-500">Download or copy configuration files to connect Claude Code or Claude Desktop to LocalTask.</p>
+
+      <!-- Claude Code Config -->
+      <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+            </svg>
+            <span class="text-sm font-medium text-gray-700">Claude Code</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button data-controller="clipboard" data-clipboard-target-value="claude-code-config" data-action="clipboard#copy" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <span data-clipboard-target="label">Copy</span>
+            </button>
+            <%= link_to download_config_agent_path(@agent, format_type: "claude_code"), class: "inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700" do %>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              Download .mcp.json
+            <% end %>
+          </div>
+        </div>
+        <div class="p-4">
+          <p class="text-xs text-gray-500 mb-2">Place this <code class="bg-gray-100 px-1 rounded">.mcp.json</code> file in your project root. Claude Code will auto-discover it.</p>
+          <pre id="claude-code-config" class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto"><%= JSON.pretty_generate({ mcpServers: { "local-task" => { url: "#{@server_url}/mcp/sse" } } }) %></pre>
+        </div>
+      </div>
+
+      <!-- Claude Desktop Config -->
+      <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            <span class="text-sm font-medium text-gray-700">Claude Desktop</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button data-controller="clipboard" data-clipboard-target-value="claude-desktop-config" data-action="clipboard#copy" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <span data-clipboard-target="label">Copy</span>
+            </button>
+            <%= link_to download_config_agent_path(@agent, format_type: "claude_desktop"), class: "inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700" do %>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              Download config
+            <% end %>
+          </div>
+        </div>
+        <div class="p-4">
+          <p class="text-xs text-gray-500 mb-2">
+            Merge this into your Claude Desktop config file:<br>
+            <strong>macOS:</strong> <code class="bg-gray-100 px-1 rounded">~/Library/Application Support/Claude/claude_desktop_config.json</code><br>
+            <strong>Windows:</strong> <code class="bg-gray-100 px-1 rounded">%APPDATA%\Claude\claude_desktop_config.json</code>
+          </p>
+          <pre id="claude-desktop-config" class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto"><%= JSON.pretty_generate({ mcpServers: { "local-task" => { url: "#{@server_url}/mcp/sse" } } }) %></pre>
+        </div>
+      </div>
+
+      <!-- STDIO Config (Advanced) -->
+      <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span class="text-sm font-medium text-gray-700">STDIO Transport (Advanced)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button data-controller="clipboard" data-clipboard-target-value="stdio-config" data-action="clipboard#copy" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <span data-clipboard-target="label">Copy</span>
+            </button>
+            <%= link_to download_config_agent_path(@agent, format_type: "stdio"), class: "inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700" do %>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              Download .mcp.json
+            <% end %>
+          </div>
+        </div>
+        <div class="p-4">
+          <p class="text-xs text-gray-500 mb-2">For local development only. Requires Ruby and the LocalTask project cloned on the machine. The MCP server runs as a subprocess.</p>
+          <pre id="stdio-config" class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto"><%= JSON.pretty_generate({ mcpServers: { "local-task" => { command: "ruby", args: ["#{Rails.root}/bin/mcp_server"] } } }) %></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agent Identifier Usage -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-blue-800 mb-2">Using the Agent Identifier</h3>
+      <p class="text-sm text-blue-700 mb-2">When using MCP tools, pass <code class="bg-blue-100 px-1 rounded font-mono"><%= @agent.identifier %></code> as the <code class="bg-blue-100 px-1 rounded font-mono">agent_identifier</code> parameter to track which agent is performing actions.</p>
+      <p class="text-xs text-blue-600">Example: <code class="bg-blue-100 px-1 rounded font-mono">CreateTaskTool(project: "LT", title: "Fix bug", agent_identifier: "<%= @agent.identifier %>")</code></p>
+    </div>
+
+    <!-- REST API Usage -->
+    <div class="mt-4 bg-gray-50 rounded-lg p-4">
+      <h3 class="text-sm font-semibold text-gray-700 mb-2">REST API Usage</h3>
+      <div class="text-xs text-gray-500 space-y-2 font-mono">
+        <p class="text-gray-600"># List projects</p>
+        <p class="text-gray-700">curl -H "Authorization: Bearer YOUR_TOKEN" \<br>
+          &nbsp;&nbsp;-H "X-Agent-Identifier: <%= @agent.identifier %>" \<br>
+          &nbsp;&nbsp;<%= @server_url %>/api/v1/projects</p>
+        <p class="mt-2 text-gray-600"># Create a task</p>
+        <p class="text-gray-700">curl -X POST -H "Authorization: Bearer YOUR_TOKEN" \<br>
+          &nbsp;&nbsp;-H "Content-Type: application/json" \<br>
+          &nbsp;&nbsp;-H "X-Agent-Identifier: <%= @agent.identifier %>" \<br>
+          &nbsp;&nbsp;-d '{"title": "My task", "priority": "high"}' \<br>
+          &nbsp;&nbsp;<%= @server_url %>/api/v1/projects/1/tasks</p>
+      </div>
+      <% if @agent.api_token %>
+        <p class="text-xs text-gray-400 mt-3">Token prefix: <code class="bg-gray-200 px-1 rounded"><%= @agent.api_token.prefix %>...</code></p>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-action="clipboard#copy"]');
+  if (!btn) return;
+  var targetId = btn.getAttribute('data-clipboard-target-value');
+  var el = document.getElementById(targetId);
+  if (!el) return;
+  var text = el.textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    var label = btn.querySelector('[data-clipboard-target="label"]');
+    if (label) {
+      var original = label.textContent;
+      label.textContent = 'Copied!';
+      setTimeout(function() { label.textContent = original; }, 2000);
+    }
+  });
+});
+</script>

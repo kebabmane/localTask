@@ -1,5 +1,6 @@
 class ApiToken < ApplicationRecord
   belongs_to :user
+  has_one :agent, dependent: :nullify
 
   validates :name, presence: true
   validates :token_digest, presence: true, uniqueness: true
