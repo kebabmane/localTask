@@ -1,0 +1,108 @@
+<%= render layout: "admin/shared/layout" do %>
+  <!-- Stat cards -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <% [
+      { label: "Users", value: @stats[:users], icon: "users" },
+      { label: "Projects", value: @stats[:projects], icon: "chart_bar" },
+      { label: "Open Tasks", value: @stats[:tasks_open] },
+      { label: "Completed", value: @stats[:tasks_completed] },
+      { label: "Active Agents", value: @stats[:agents_active], icon: "cpu_chip" },
+      { label: "API Tokens", value: @stats[:api_tokens_active], sub: "of #{@stats[:api_tokens_total]}" },
+      { label: "Webhooks", value: @stats[:webhooks_active], warn: @stats[:webhooks_failing] > 0 ? "#{@stats[:webhooks_failing]} failing" : nil },
+      { label: "Unread Notifications", value: @stats[:notifications_unread] },
+    ].each do |card| %>
+      <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <p class="text-sm text-gray-500"><%= card[:label] %></p>
+        <p class="text-2xl font-bold text-gray-900 mt-1"><%= card[:value] %></p>
+        <% if card[:sub] %>
+          <p class="text-xs text-gray-400 mt-0.5"><%= card[:sub] %></p>
+        <% end %>
+        <% if card[:warn] %>
+          <p class="text-xs text-red-500 mt-0.5"><%= card[:warn] %></p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Recent tasks -->
+    <div class="lg:col-span-2 bg-white rounded-lg border border-gray-200">
+      <div class="px-4 py-3 border-b border-gray-200">
+        <h2 class="text-sm font-semibold text-gray-700">Recent Tasks</h2>
+      </div>
+      <% if @recent_tasks.any? %>
+        <div class="divide-y divide-gray-200">
+          <% @recent_tasks.each do |task| %>
+            <div class="px-4 py-3 flex items-center justify-between">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="text-xs font-mono text-gray-400 shrink-0"><%= task.display_id %></span>
+                <span class="truncate text-sm text-gray-900"><%= task.title %></span>
+                <span class="px-2 py-0.5 text-xs rounded-full text-white shrink-0"
+                      style="background-color: <%= task.task_status.color %>">
+                  <%= task.task_status.name %>
+                </span>
+              </div>
+              <span class="text-xs text-gray-400 shrink-0 ml-3"><%= time_ago_in_words(task.created_at) %> ago</span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="p-8 text-center text-sm text-gray-400">No tasks yet</p>
+      <% end %>
+    </div>
+
+    <!-- Right sidebar -->
+    <div class="space-y-6">
+      <!-- Active agents -->
+      <div class="bg-white rounded-lg border border-gray-200">
+        <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-gray-700">Active Agents</h2>
+          <%= link_to "View all", admin_agents_path, class: "text-xs text-indigo-600 hover:text-indigo-800" %>
+        </div>
+        <% if @active_agents.any? %>
+          <div class="divide-y divide-gray-200">
+            <% @active_agents.each do |agent| %>
+              <%= link_to admin_agent_path(agent[:identifier]), class: "block px-4 py-3 hover:bg-gray-50" do %>
+                <p class="text-sm font-medium text-gray-900"><%= agent[:identifier].titleize %></p>
+                <div class="flex items-center gap-3 text-xs text-gray-400 mt-0.5">
+                  <span><%= agent[:tasks_count] %> tasks</span>
+                  <% if agent[:last_active] %>
+                    <span>Active <%= time_ago_in_words(agent[:last_active]) %> ago</span>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="p-6 text-center text-sm text-gray-400">No agents detected</p>
+        <% end %>
+      </div>
+
+      <!-- Recent users -->
+      <div class="bg-white rounded-lg border border-gray-200">
+        <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-gray-700">Recent Users</h2>
+          <%= link_to "View all", admin_users_path, class: "text-xs text-indigo-600 hover:text-indigo-800" %>
+        </div>
+        <div class="divide-y divide-gray-200">
+          <% @recent_users.each do |user| %>
+            <%= link_to admin_user_path(user), class: "flex items-center gap-3 px-4 py-3 hover:bg-gray-50" do %>
+              <span class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs shrink-0"
+                    style="background-color: <%= user.avatar_color %>">
+                <%= user.name.first.upcase %>
+              </span>
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate"><%= user.name %></p>
+                <p class="text-xs text-gray-400 truncate"><%= user.email_address %></p>
+              </div>
+              <% if user.admin? %>
+                <span class="ml-auto px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs shrink-0">Admin</span>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

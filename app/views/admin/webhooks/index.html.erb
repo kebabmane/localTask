@@ -1,0 +1,90 @@
+<%= render layout: "admin/shared/layout" do %>
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-lg font-semibold text-gray-900">Webhooks (<%= @webhooks.count %>)</h2>
+    <div class="flex items-center gap-2">
+      <% [
+        { label: "All", filter: nil },
+        { label: "Active", filter: "active" },
+        { label: "Inactive", filter: "inactive" },
+        { label: "Failing", filter: "failing" },
+      ].each do |btn| %>
+        <%= link_to btn[:label], admin_webhooks_path(filter: btn[:filter]),
+            class: "px-3 py-1.5 text-sm rounded-lg #{
+              params[:filter] == btn[:filter] || (btn[:filter].nil? && params[:filter].blank?) ?
+                'bg-indigo-600 text-white' :
+                'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+            }" %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @webhooks.any? %>
+    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agent</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Failures</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Delivered</th>
+            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% @webhooks.each do |wh| %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-3">
+                <%= link_to wh.agent_identifier.titleize, admin_agent_path(wh.agent_identifier),
+                    class: "text-sm font-medium text-indigo-600 hover:text-indigo-800" %>
+              </td>
+              <td class="px-4 py-3">
+                <span class="text-sm text-gray-900 font-mono truncate block max-w-xs"><%= wh.url %></span>
+                <% if wh.event_types.present? %>
+                  <div class="flex items-center gap-1 mt-1">
+                    <% wh.event_types.each do |evt| %>
+                      <span class="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-500 rounded"><%= evt %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </td>
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full <%= wh.active? ? 'bg-green-400' : 'bg-gray-300' %>"></span>
+                  <span class="text-sm text-gray-700"><%= wh.active? ? 'Active' : 'Inactive' %></span>
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <span class="text-sm <%= wh.failures > 0 ? 'text-red-600 font-medium' : 'text-gray-500' %>">
+                  <%= wh.failures %>
+                </span>
+              </td>
+              <td class="px-4 py-3 text-xs text-gray-400">
+                <%= wh.last_delivered_at ? "#{time_ago_in_words(wh.last_delivered_at)} ago" : "Never" %>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <%= button_to wh.active? ? "Disable" : "Enable",
+                      toggle_active_admin_webhook_path(wh), method: :patch,
+                      class: "text-xs text-gray-600 hover:text-gray-800 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50" %>
+                  <% if wh.failures > 0 %>
+                    <%= button_to "Reset", reset_failures_admin_webhook_path(wh), method: :post,
+                        class: "text-xs text-amber-600 hover:text-amber-800 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50" %>
+                  <% end %>
+                  <%= button_to "Delete", admin_webhook_path(wh), method: :delete,
+                      class: "text-xs text-red-600 hover:text-red-800 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50",
+                      data: { turbo_confirm: "Delete this webhook?" } %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-lg border border-gray-200 p-12 text-center">
+      <p class="text-sm text-gray-500">No webhooks registered</p>
+      <p class="text-xs text-gray-400 mt-1">Agents can register webhooks via the API or MCP tools.</p>
+    </div>
+  <% end %>
+<% end %>

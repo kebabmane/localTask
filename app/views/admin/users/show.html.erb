@@ -1,0 +1,96 @@
+<%= render layout: "admin/shared/layout" do %>
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-4">
+      <span class="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-semibold"
+            style="background-color: <%= @user.avatar_color %>">
+        <%= @user.name.first.upcase %>
+      </span>
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900"><%= @user.name %></h2>
+        <p class="text-sm text-gray-500"><%= @user.email_address %></p>
+      </div>
+      <span class="px-2 py-0.5 text-xs rounded <%= @user.admin? ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600' %>">
+        <%= @user.role.titleize %>
+      </span>
+    </div>
+    <%= link_to "Edit", edit_admin_user_path(@user), class: "px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700" %>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- User info -->
+    <div class="bg-white rounded-lg border border-gray-200 p-4">
+      <h3 class="text-sm font-semibold text-gray-700 mb-3">Details</h3>
+      <dl class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <dt class="text-gray-500">Joined</dt>
+          <dd class="text-gray-900"><%= @user.created_at.strftime("%b %d, %Y") %></dd>
+        </div>
+        <div class="flex justify-between">
+          <dt class="text-gray-500">Projects</dt>
+          <dd class="text-gray-900"><%= @projects.count %></dd>
+        </div>
+        <div class="flex justify-between">
+          <dt class="text-gray-500">API Tokens</dt>
+          <dd class="text-gray-900"><%= @api_tokens.count %></dd>
+        </div>
+        <div class="flex justify-between">
+          <dt class="text-gray-500">Tasks Created</dt>
+          <dd class="text-gray-900"><%= @user.created_tasks.count %></dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- Recent tasks -->
+    <div class="lg:col-span-2 bg-white rounded-lg border border-gray-200">
+      <div class="px-4 py-3 border-b border-gray-200">
+        <h3 class="text-sm font-semibold text-gray-700">Recent Tasks</h3>
+      </div>
+      <% if @recent_tasks.any? %>
+        <div class="divide-y divide-gray-200">
+          <% @recent_tasks.each do |task| %>
+            <div class="px-4 py-3 flex items-center justify-between">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="text-xs font-mono text-gray-400 shrink-0"><%= task.display_id %></span>
+                <span class="truncate text-sm text-gray-900"><%= task.title %></span>
+                <span class="px-2 py-0.5 text-xs rounded-full text-white shrink-0"
+                      style="background-color: <%= task.task_status.color %>">
+                  <%= task.task_status.name %>
+                </span>
+              </div>
+              <span class="text-xs text-gray-400 shrink-0 ml-3"><%= time_ago_in_words(task.created_at) %> ago</span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="p-6 text-center text-sm text-gray-400">No tasks created</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- API Tokens -->
+  <% if @api_tokens.any? %>
+    <div class="mt-6 bg-white rounded-lg border border-gray-200">
+      <div class="px-4 py-3 border-b border-gray-200">
+        <h3 class="text-sm font-semibold text-gray-700">API Tokens</h3>
+      </div>
+      <div class="divide-y divide-gray-200">
+        <% @api_tokens.each do |token| %>
+          <div class="px-4 py-3 flex items-center justify-between">
+            <div>
+              <span class="text-sm font-medium text-gray-900"><%= token.name %></span>
+              <span class="text-xs text-gray-400 ml-2 font-mono"><%= token.prefix %>...</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="px-2 py-0.5 text-xs rounded <%= token.active? ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' %>">
+                <%= token.active? ? "Active" : "Revoked" %>
+              </span>
+              <% if token.last_used_at %>
+                <span class="text-xs text-gray-400">Used <%= time_ago_in_words(token.last_used_at) %> ago</span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

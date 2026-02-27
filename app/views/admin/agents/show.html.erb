@@ -1,0 +1,125 @@
+<%= render layout: "admin/shared/layout" do %>
+  <!-- Header -->
+  <div class="flex items-center gap-3 mb-6">
+    <%= link_to admin_agents_path, class: "text-gray-400 hover:text-gray-600" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+      </svg>
+    <% end %>
+    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+      <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="text-lg font-semibold text-gray-900"><%= @identifier.titleize %></h2>
+      <p class="text-xs text-gray-400 font-mono"><%= @identifier %></p>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <% [
+      { label: "Total Tasks", value: @stats[:tasks_total] },
+      { label: "Open Tasks", value: @stats[:tasks_open] },
+      { label: "Comments", value: @stats[:comments] },
+      { label: "Unread Notifications", value: @stats[:notifications_unread] },
+    ].each do |card| %>
+      <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <p class="text-xs text-gray-500"><%= card[:label] %></p>
+        <p class="text-xl font-bold text-gray-900 mt-1"><%= card[:value] %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Timeline info -->
+  <div class="flex items-center gap-6 mb-6 text-xs text-gray-400">
+    <% if @stats[:first_seen] %>
+      <span>First seen: <%= @stats[:first_seen].strftime("%b %d, %Y %H:%M") %></span>
+    <% end %>
+    <% if @stats[:last_active] %>
+      <span>Last active: <%= time_ago_in_words(@stats[:last_active]) %> ago</span>
+    <% end %>
+  </div>
+
+  <!-- Tasks -->
+  <div class="bg-white rounded-lg border border-gray-200 mb-6">
+    <div class="px-4 py-3 border-b border-gray-200">
+      <h3 class="text-sm font-semibold text-gray-700">Tasks (<%= @tasks.size %>)</h3>
+    </div>
+    <% if @tasks.any? %>
+      <div class="divide-y divide-gray-200">
+        <% @tasks.each do |task| %>
+          <div class="px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="text-xs font-mono text-gray-400 shrink-0"><%= task.display_id %></span>
+              <span class="truncate text-sm text-gray-900"><%= task.title %></span>
+              <span class="px-2 py-0.5 text-xs rounded-full text-white shrink-0"
+                    style="background-color: <%= task.task_status.color %>">
+                <%= task.task_status.name %>
+              </span>
+            </div>
+            <span class="text-xs text-gray-400 shrink-0 ml-3"><%= task.project.name %></span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="p-6 text-center text-sm text-gray-400">No tasks assigned</p>
+    <% end %>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Webhooks -->
+    <div class="bg-white rounded-lg border border-gray-200">
+      <div class="px-4 py-3 border-b border-gray-200">
+        <h3 class="text-sm font-semibold text-gray-700">Webhooks (<%= @webhooks.size %>)</h3>
+      </div>
+      <% if @webhooks.any? %>
+        <div class="divide-y divide-gray-200">
+          <% @webhooks.each do |wh| %>
+            <div class="px-4 py-3">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-2 h-2 rounded-full <%= wh.active? ? 'bg-green-400' : 'bg-gray-300' %>"></span>
+                <span class="text-sm text-gray-900 truncate font-mono"><%= wh.url %></span>
+              </div>
+              <div class="flex items-center gap-3 text-xs text-gray-400">
+                <span><%= wh.active? ? 'Active' : 'Inactive' %></span>
+                <% if wh.failures > 0 %>
+                  <span class="text-red-500"><%= wh.failures %> failures</span>
+                <% end %>
+                <% if wh.last_delivered_at %>
+                  <span>Last delivery: <%= time_ago_in_words(wh.last_delivered_at) %> ago</span>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="p-6 text-center text-sm text-gray-400">No webhooks registered</p>
+      <% end %>
+    </div>
+
+    <!-- Recent notifications -->
+    <div class="bg-white rounded-lg border border-gray-200">
+      <div class="px-4 py-3 border-b border-gray-200">
+        <h3 class="text-sm font-semibold text-gray-700">Recent Notifications</h3>
+      </div>
+      <% if @notifications.any? %>
+        <div class="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+          <% @notifications.first(20).each do |notif| %>
+            <div class="px-4 py-3">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-2 h-2 rounded-full <%= notif.read? ? 'bg-gray-300' : 'bg-blue-400' %>"></span>
+                <span class="text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-600"><%= notif.event_type %></span>
+                <span class="text-xs text-gray-400"><%= time_ago_in_words(notif.created_at) %> ago</span>
+              </div>
+              <p class="text-sm text-gray-700 ml-4"><%= notif.message %></p>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="p-6 text-center text-sm text-gray-400">No notifications</p>
+      <% end %>
+    </div>
+  </div>
+<% end %>

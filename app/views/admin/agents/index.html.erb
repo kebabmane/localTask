@@ -1,0 +1,56 @@
+<%= render layout: "admin/shared/layout" do %>
+  <h2 class="text-lg font-semibold text-gray-900 mb-4">Discovered Agents (<%= @agents.size %>)</h2>
+  <p class="text-sm text-gray-500 mb-6">Agents are discovered from task assignments, comments, webhooks, and notifications.</p>
+
+  <% if @agents.any? %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <% @agents.each do |agent| %>
+        <%= link_to admin_agent_path(agent[:identifier]), class: "block bg-white rounded-lg border border-gray-200 p-4 hover:border-indigo-300 hover:shadow-sm transition-all" do %>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z"/>
+              </svg>
+            </div>
+            <h3 class="text-sm font-semibold text-gray-900"><%= agent[:identifier].titleize %></h3>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-gray-400">Tasks</span>
+              <p class="text-gray-900 font-medium"><%= agent[:tasks_count] %> <span class="text-gray-400">(<%= agent[:open_tasks] %> open)</span></p>
+            </div>
+            <div>
+              <span class="text-gray-400">Webhooks</span>
+              <p class="text-gray-900 font-medium"><%= agent[:webhooks_count] %></p>
+            </div>
+            <div>
+              <span class="text-gray-400">Unread</span>
+              <p class="<%= agent[:unread_notifications] > 0 ? 'text-amber-600 font-medium' : 'text-gray-900 font-medium' %>">
+                <%= agent[:unread_notifications] %>
+              </p>
+            </div>
+            <div>
+              <span class="text-gray-400">Last Active</span>
+              <p class="text-gray-900 font-medium">
+                <% if agent[:last_active] %>
+                  <%= time_ago_in_words(agent[:last_active]) %> ago
+                <% else %>
+                  Never
+                <% end %>
+              </p>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-lg border border-gray-200 p-12 text-center">
+      <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z"/>
+      </svg>
+      <p class="text-sm text-gray-500">No agents detected yet.</p>
+      <p class="text-xs text-gray-400 mt-1">Agents appear when they create tasks, leave comments, or register webhooks via the API.</p>
+    </div>
+  <% end %>
+<% end %>
