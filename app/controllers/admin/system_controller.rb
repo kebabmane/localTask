@@ -46,13 +46,18 @@ module Admin
     end
 
     def job_stats
+      queue_conn = queue_connection
+      return nil unless queue_conn
+
       {
-        ready: safe_count("solid_queue_ready_executions"),
-        scheduled: safe_count("solid_queue_scheduled_executions"),
-        claimed: safe_count("solid_queue_claimed_executions"),
-        failed: safe_count("solid_queue_failed_executions"),
-        total_jobs: safe_count("solid_queue_jobs")
+        ready: safe_count(queue_conn, "solid_queue_ready_executions"),
+        scheduled: safe_count(queue_conn, "solid_queue_scheduled_executions"),
+        claimed: safe_count(queue_conn, "solid_queue_claimed_executions"),
+        failed: safe_count(queue_conn, "solid_queue_failed_executions"),
+        total_jobs: safe_count(queue_conn, "solid_queue_jobs")
       }
+    rescue
+      nil
     end
 
     def app_stats
@@ -64,10 +69,18 @@ module Admin
       }
     end
 
-    def safe_count(table_name)
-      if ActiveRecord::Base.connection.table_exists?(table_name)
-        ActiveRecord::Base.connection.select_value("SELECT COUNT(*) FROM \"#{table_name}\"")
+    def queue_connection
+      SolidQueue::Job.connection
+    rescue
+      nil
+    end
+
+    def safe_count(conn, table_name)
+      if conn.table_exists?(table_name)
+        conn.select_value("SELECT COUNT(*) FROM \"#{table_name}\"")
       end
+    rescue
+      nil
     end
   end
 end
