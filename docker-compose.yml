@@ -10,7 +10,6 @@ services:
       - RAILS_SERVE_STATIC_FILES=true
       - RAILS_LOG_TO_STDOUT=true
     volumes:
-      - db_data:/rails/db
       - storage_data:/rails/storage
     restart: unless-stopped
     healthcheck:
@@ -20,5 +19,4 @@ services:
       retries: 3
 
 volumes:
-  db_data:
   storage_data:
