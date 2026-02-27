@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_26_232357) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_27_060516) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -37,6 +37,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_26_232357) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "agent_notifications", force: :cascade do |t|
+    t.string "agent_identifier", null: false
+    t.integer "comment_id"
+    t.datetime "created_at", null: false
+    t.string "event_type", null: false
+    t.text "message", null: false
+    t.json "payload"
+    t.boolean "read", default: false, null: false
+    t.datetime "read_at"
+    t.integer "task_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["agent_identifier", "read", "created_at"], name: "idx_agent_notifications_unread"
+    t.index ["comment_id"], name: "index_agent_notifications_on_comment_id"
+    t.index ["task_id"], name: "index_agent_notifications_on_task_id"
+  end
+
+  create_table "agent_webhooks", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "agent_identifier", null: false
+    t.datetime "created_at", null: false
+    t.json "event_types"
+    t.integer "failures", default: 0, null: false
+    t.datetime "last_delivered_at"
+    t.datetime "last_failed_at"
+    t.string "secret"
+    t.datetime "updated_at", null: false
+    t.string "url", null: false
+    t.index ["agent_identifier", "active"], name: "idx_agent_webhooks_active_agent"
   end
 
   create_table "api_tokens", force: :cascade do |t|
@@ -66,6 +96,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_26_232357) do
     t.index ["task_id", "created_at"], name: "index_comments_on_task_id_and_created_at"
     t.index ["task_id"], name: "index_comments_on_task_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
+  end
+
+  create_table "mentions", force: :cascade do |t|
+    t.string "agent_identifier"
+    t.integer "comment_id", null: false
+    t.datetime "created_at", null: false
+    t.string "mention_text", null: false
+    t.string "mention_type", null: false
+    t.integer "mentioned_task_id"
+    t.datetime "updated_at", null: false
+    t.index ["agent_identifier"], name: "index_mentions_on_agent_identifier"
+    t.index ["comment_id"], name: "index_mentions_on_comment_id"
+    t.index ["mentioned_task_id"], name: "index_mentions_on_mentioned_task_id"
   end
 
   create_table "projects", force: :cascade do |t|
@@ -158,9 +201,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_26_232357) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "agent_notifications", "comments"
+  add_foreign_key "agent_notifications", "tasks"
   add_foreign_key "api_tokens", "users"
   add_foreign_key "comments", "tasks"
   add_foreign_key "comments", "users"
+  add_foreign_key "mentions", "comments"
+  add_foreign_key "mentions", "tasks", column: "mentioned_task_id"
   add_foreign_key "projects", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "task_dependencies", "tasks"

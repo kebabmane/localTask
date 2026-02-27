@@ -5,6 +5,7 @@ class Task < ApplicationRecord
   belongs_to :assignee, class_name: "User", optional: true
 
   has_many :comments, -> { order(created_at: :asc) }, dependent: :destroy
+  has_many :agent_notifications, dependent: :destroy
   has_many :task_dependencies, dependent: :destroy
   has_many :dependencies, through: :task_dependencies, source: :dependency
   has_many :inverse_task_dependencies, class_name: "TaskDependency", foreign_key: :dependency_id, dependent: :destroy
@@ -22,6 +23,7 @@ class Task < ApplicationRecord
   before_validation :set_task_number, on: :create
   after_save :record_status_change, if: :saved_change_to_task_status_id?
   after_save :set_completed_at
+  after_save :notify_agent_assigned, if: :agent_identifier_changed_to_present?
 
   broadcasts_to :project
 
@@ -54,6 +56,16 @@ class Task < ApplicationRecord
       user: Current.user,
       comment_type: :status_change
     )
+
+    ::NotificationService.status_changed(self, old_status.name, new_status.name)
+  end
+
+  def agent_identifier_changed_to_present?
+    saved_change_to_agent_identifier? && agent_identifier.present?
+  end
+
+  def notify_agent_assigned
+    ::NotificationService.task_assigned(self)
   end
 
   def set_completed_at

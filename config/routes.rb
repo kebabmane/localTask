@@ -28,6 +28,17 @@ Rails.application.routes.draw do
         resources :statuses, only: [:index], controller: "task_statuses"
       end
       resource :me, only: [:show], controller: "profile"
+
+      # Agent hooks
+      resources :agent_notifications, only: [:index] do
+        member do
+          patch :mark_read
+        end
+        collection do
+          post :mark_all_read
+        end
+      end
+      resources :agent_webhooks, only: [:index, :create, :update, :destroy]
     end
   end
 
