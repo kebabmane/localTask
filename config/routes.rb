@@ -42,6 +42,21 @@ Rails.application.routes.draw do
     end
   end
 
+  # Admin panel
+  namespace :admin do
+    get "/", to: "dashboard#show"
+    resources :users, only: [:index, :show, :edit, :update]
+    resources :agents, only: [:index, :show], constraints: { id: /[^\/]+/ }
+    resources :api_tokens, only: [:index, :destroy]
+    resources :webhooks, only: [:index, :destroy] do
+      member do
+        patch :toggle_active
+        post :reset_failures
+      end
+    end
+    resource :system, only: [:show], controller: "system"
+  end
+
   # Dashboard
   root "dashboards#show"
 

@@ -1,0 +1,29 @@
+<div class="p-6 h-full overflow-y-auto">
+  <div class="max-w-6xl mx-auto">
+    <!-- Admin header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Admin</h1>
+      <p class="text-sm text-gray-500 mt-1">System administration and monitoring</p>
+    </div>
+
+    <!-- Tab navigation -->
+    <div class="border-b border-gray-200 mb-6">
+      <nav class="-mb-px flex space-x-6 overflow-x-auto">
+        <% admin_nav_items.each do |item| %>
+          <%= link_to item[:path],
+              class: "inline-flex items-center gap-1.5 px-1 py-3 border-b-2 text-sm font-medium whitespace-nowrap #{
+                current_admin_section == item[:key] ?
+                  'border-indigo-500 text-indigo-600' :
+                  'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }" do %>
+            <%= render "admin/shared/icon", name: item[:icon] %>
+            <%= item[:label] %>
+          <% end %>
+        <% end %>
+      </nav>
+    </div>
+
+    <!-- Tab content -->
+    <%= yield %>
+  </div>
+</div>
